@@ -1,5 +1,4 @@
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv } from 'vite'
 
 const profileLinks = [
@@ -48,7 +47,7 @@ function portfolioSeo() {
         '@type': 'Person',
         name: 'Sanskar Solapure',
         url: canonicalUrl,
-        jobTitle: 'Aspiring Software Engineer',
+        jobTitle: 'Computer Science Engineering Student',
         affiliation: {
           '@type': 'EducationalOrganization',
           name: 'AISSMS Institute of Information Technology',
@@ -66,7 +65,7 @@ function portfolioSeo() {
         `<meta property="og:image" content="${imageUrl}" />`,
         '<meta property="og:image:width" content="1200" />',
         '<meta property="og:image:height" content="630" />',
-        '<meta property="og:image:alt" content="Sanskar Solapure — Software Developer Portfolio in a dark cyan aquarium theme" />',
+        '<meta property="og:image:alt" content="Social preview for Sanskar Solapure’s portfolio" />',
         `<meta name="twitter:image" content="${imageUrl}" />`,
         `<script type="application/ld+json">${JSON.stringify(person)}</script>`,
       ].join('\n    ')
@@ -77,5 +76,5 @@ function portfolioSeo() {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), portfolioSeo()],
+  plugins: [react(), portfolioSeo()],
 })

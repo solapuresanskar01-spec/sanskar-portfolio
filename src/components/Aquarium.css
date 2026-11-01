@@ -4,38 +4,6 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse at 70% 8%, rgba(0, 229, 255, 0.075), transparent 34rem),
-    radial-gradient(ellipse at 16% 58%, rgba(0, 115, 150, 0.08), transparent 38rem);
-}
-
-.aquarium-layer::before,
-.aquarium-layer::after {
-  position: absolute;
-  inset: -20%;
-  content: "";
-  pointer-events: none;
-}
-
-.aquarium-layer::before {
-  opacity: 0.48;
-  background:
-    linear-gradient(111deg, transparent 35%, rgba(47, 226, 238, 0.035) 44%, transparent 52%),
-    linear-gradient(76deg, transparent 58%, rgba(0, 229, 255, 0.035) 64%, transparent 71%),
-    linear-gradient(101deg, transparent 70%, rgba(62, 207, 220, 0.025) 76%, transparent 82%);
-  mask-image: linear-gradient(to bottom, black 0%, transparent 80%);
-  animation: aquarium-rays 34s ease-in-out infinite alternate;
-}
-
-.aquarium-layer::after {
-  inset: 0;
-  opacity: 0.12;
-  background:
-    radial-gradient(ellipse at 20% 30%, transparent 0 32px, rgba(0, 229, 255, 0.13) 33px, transparent 35px),
-    radial-gradient(ellipse at 70% 55%, transparent 0 46px, rgba(79, 228, 230, 0.1) 47px, transparent 49px);
-  background-size: 190px 160px, 250px 210px;
-  mask-image: linear-gradient(to bottom, transparent 3%, black 22%, transparent 78%);
-  animation: caustic-drift 52s linear infinite;
 }
 
 .aquarium-canvas {
@@ -43,56 +11,15 @@
   inset: 0;
   display: block;
   pointer-events: none;
+  opacity: 0.26;
 }
 
-@keyframes aquarium-rays {
-  from {
-    transform: translate3d(-1.5%, -0.5%, 0);
-  }
-  to {
-    transform: translate3d(1.5%, 1%, 0);
-  }
+.aquarium-canvas[hidden] {
+  display: none;
 }
 
-@keyframes caustic-drift {
-  to {
-    background-position: 190px -160px, -250px 210px;
-  }
-}
-
-.site-shell[data-theme="light"] .aquarium-layer {
-  background:
-    radial-gradient(ellipse at 70% 8%, rgba(0, 155, 175, 0.09), transparent 34rem),
-    radial-gradient(ellipse at 16% 58%, rgba(0, 115, 150, 0.045), transparent 38rem);
-}
-
-.site-shell[data-theme="light"] .aquarium-layer::before {
-  opacity: 0.24;
-}
-
-@media (max-width: 720px) {
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
   .aquarium-canvas {
-    opacity: 0.58;
-  }
-
-  .aquarium-layer::before {
-    opacity: 0.25;
-  }
-
-  .aquarium-layer::after {
-    opacity: 0.08;
-  }
-}
-
-@media (max-width: 420px) {
-  .aquarium-canvas {
-    opacity: 0.48;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aquarium-layer::before,
-  .aquarium-layer::after {
-    animation: none;
+    display: none;
   }
 }

@@ -11,7 +11,7 @@ const navigation = [
   { label: 'Contact', href: '#contact' },
 ]
 
-function Navbar({ theme, onToggleTheme }) {
+function Navbar({ theme, activeSection, onToggleTheme }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   function closeMenu() {
@@ -43,7 +43,12 @@ function Navbar({ theme, onToggleTheme }) {
         >
           <div className="nav-links">
             {navigation.map((item) => (
-              <a key={item.href} href={item.href} onClick={closeMenu}>
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={closeMenu}
+                aria-current={activeSection === item.href.slice(1) ? 'location' : undefined}
+              >
                 {item.label}
               </a>
             ))}
@@ -54,6 +59,7 @@ function Navbar({ theme, onToggleTheme }) {
               type="button"
               onClick={onToggleTheme}
               aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+              aria-pressed={theme === 'dark'}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
             >
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}

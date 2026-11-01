@@ -12,59 +12,63 @@ import Projects from './components/Projects.jsx'
 import Resume from './components/Resume.jsx'
 import Skills from './components/Skills.jsx'
 
+const navigationSections = ['home', 'about', 'skills', 'projects', 'education', 'contact']
+
 function App() {
-  const [theme, setTheme] = useState('dark')
-  const [projectJourney, setProjectJourney] = useState({ active: false, key: 0 })
+  const [theme, setTheme] = useState(() => (
+    document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+  ))
+  const [activeSection, setActiveSection] = useState('home')
 
   function toggleTheme() {
-    setTheme((currentTheme) => currentTheme === 'dark' ? 'light' : 'dark')
-  }
-
-  function startProjectJourney() {
-    setProjectJourney((journey) => ({ active: true, key: journey.key + 1 }))
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = nextTheme
+    setTheme(nextTheme)
   }
 
   useEffect(() => {
-    if (!projectJourney.active) return undefined
-
-    const projectsSection = document.getElementById('projects')
-    if (!projectsSection) {
-      throw new Error('Projects section was not found.')
+    try {
+      window.localStorage.setItem('portfolio-theme', theme)
+    } catch (error) {
+      console.warn('Theme preference could not be saved.', error)
     }
 
-    const stopWhenProjectsAreVisible = () => {
-      const bounds = projectsSection.getBoundingClientRect()
-      if (bounds.top < window.innerHeight && bounds.bottom > 0) {
-        setProjectJourney((journey) => ({ ...journey, active: false }))
-      }
+    const themeColor = document.querySelector('meta[name="theme-color"]')
+    if (themeColor) {
+      themeColor.content = getComputedStyle(document.querySelector('.site-shell'))
+        .getPropertyValue('--palette-background')
+        .trim()
     }
+  }, [theme])
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setProjectJourney((journey) => ({ ...journey, active: false }))
-        }
-      },
-      { threshold: 0.1 },
-    )
+  useEffect(() => {
+    const sections = navigationSections
+      .map((id) => document.getElementById(id))
+      .filter(Boolean)
 
-    observer.observe(projectsSection)
-    window.addEventListener('scroll', stopWhenProjectsAreVisible, { passive: true })
-    stopWhenProjectsAreVisible()
+    const observer = new IntersectionObserver((entries) => {
+      const visibleSections = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => (
+          Math.abs(a.boundingClientRect.top - window.innerHeight * 0.4)
+          - Math.abs(b.boundingClientRect.top - window.innerHeight * 0.4)
+        ))
 
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('scroll', stopWhenProjectsAreVisible)
-    }
-  }, [projectJourney.active, projectJourney.key])
+      if (visibleSections[0]) setActiveSection(visibleSections[0].target.id)
+    }, { rootMargin: '-35% 0px -55% 0px' })
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <>
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="site-shell" data-theme={theme}>
         <Aquarium />
-        <Navbar theme={theme} onToggleTheme={toggleTheme} />
-        <main>
-          <Hero onViewProjects={startProjectJourney} />
+        <Navbar theme={theme} activeSection={activeSection} onToggleTheme={toggleTheme} />
+        <main id="main-content" tabIndex="-1">
+          <Hero />
           <About />
           <Skills />
           <Projects />
@@ -73,12 +77,6 @@ function App() {
           <Resume />
           <Contact />
         </main>
-        {projectJourney.active && (
-          <div className="project-journey-indicator" role="status" aria-label="Scrolling to projects">
-            <span />
-            <span className="visually-hidden">Scrolling to projects</span>
-          </div>
-        )}
         <Footer />
       </div>
       <GlobalRipple />

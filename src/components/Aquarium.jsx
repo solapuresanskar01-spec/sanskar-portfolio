@@ -1,17 +1,15 @@
 import { useEffect, useRef } from 'react'
 import './Aquarium.css'
 
-const SCHOOL_SIZE = 6
-const AMBIENT_SIZE = 7
-const FISH_COLORS = ['#00e5ff', '#36d9e8', '#42b7dc', '#64e6da', '#35a7c7']
-const FISH_ACCENTS = ['#ff6b00', '#f9a14a', '#8cf7ed']
+const SCHOOL_SIZE = 4
+const AMBIENT_SIZE = 4
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min)
 }
 
 function createFish(kind, width, height, index = 0) {
-  const size = kind === 'jumper' ? randomBetween(15, 19) : randomBetween(9, 15)
+  const size = kind === 'jumper' ? randomBetween(11, 13) : randomBetween(6, 10)
   const x = randomBetween(size, Math.max(size + 1, width - size))
   const y = randomBetween(75, Math.max(76, height - 55))
 
@@ -23,8 +21,6 @@ function createFish(kind, width, height, index = 0) {
     vy: randomBetween(-8, 8),
     size,
     speed: kind === 'school' ? randomBetween(54, 91) : randomBetween(18, 42),
-    color: FISH_COLORS[Math.floor(Math.random() * FISH_COLORS.length)],
-    accent: FISH_ACCENTS[Math.floor(Math.random() * FISH_ACCENTS.length)],
     phase: randomBetween(0, Math.PI * 2),
     index,
     nextTurn: randomBetween(0, 3),
@@ -38,7 +34,7 @@ function createFish(kind, width, height, index = 0) {
   }
 }
 
-function drawFish(context, fish, elapsed, jumping) {
+function drawFish(context, fish, elapsed, jumping, palette) {
   const speed = Math.hypot(fish.vx, fish.vy)
   if (speed > 1) fish.angle = Math.atan2(fish.vy, fish.vx)
 
@@ -53,9 +49,7 @@ function drawFish(context, fish, elapsed, jumping) {
   context.save()
   context.translate(fish.x, y)
   context.rotate(fish.angle || 0)
-  context.globalAlpha = fish.kind === 'school' ? 0.82 : 0.66
-  context.shadowColor = fish.color
-  context.shadowBlur = fish.size * 0.8
+  context.globalAlpha = fish.kind === 'school' ? 0.5 : 0.36
 
   context.beginPath()
   context.moveTo(-length * 0.43, 0)
@@ -63,32 +57,31 @@ function drawFish(context, fish, elapsed, jumping) {
   context.quadraticCurveTo(length * 0.52, 0, length * 0.33, fish.size * 0.1)
   context.quadraticCurveTo(-length * 0.18, fish.size * 0.66, -length * 0.43, 0)
   const bodyGradient = context.createLinearGradient(-length * 0.4, 0, length * 0.45, 0)
-  bodyGradient.addColorStop(0, fish.color)
-  bodyGradient.addColorStop(1, '#b8fff6')
+  bodyGradient.addColorStop(0, palette.secondary)
+  bodyGradient.addColorStop(1, palette.text)
   context.fillStyle = bodyGradient
   context.fill()
 
-  context.shadowBlur = 0
   context.beginPath()
   context.moveTo(-length * 0.4, 0)
   context.lineTo(-length * 0.75, -fish.size * (0.36 + tailWag * 0.14))
   context.lineTo(-length * 0.68, 0)
   context.lineTo(-length * 0.75, fish.size * (0.36 - tailWag * 0.14))
   context.closePath()
-  context.fillStyle = fish.accent
+  context.fillStyle = palette.secondary
   context.globalAlpha *= 0.85
   context.fill()
 
   context.beginPath()
   context.moveTo(-fish.size * 0.12, -fish.size * 0.35)
   context.quadraticCurveTo(fish.size * 0.12, -fish.size * 0.78, fish.size * 0.4, -fish.size * 0.35)
-  context.fillStyle = fish.accent
+  context.fillStyle = palette.secondary
   context.globalAlpha *= 0.65
   context.fill()
 
   context.beginPath()
   context.arc(length * 0.28, -fish.size * 0.13, Math.max(0.8, fish.size * 0.065), 0, Math.PI * 2)
-  context.fillStyle = '#04212b'
+  context.fillStyle = palette.text
   context.globalAlpha = 0.9
   context.fill()
   context.restore()
@@ -107,6 +100,16 @@ function Aquarium() {
       return undefined
     }
 
+    const shell = canvas.closest('.site-shell')
+    const hero = document.getElementById('home')
+    const readPalette = () => {
+      const styles = getComputedStyle(shell)
+      return {
+        secondary: styles.getPropertyValue('--palette-accent-secondary').trim(),
+        text: styles.getPropertyValue('--palette-text').trim(),
+      }
+    }
+    let palette = readPalette()
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
     const touchPreference = window.matchMedia('(hover: none), (pointer: coarse)')
     const lowPerformance = (navigator.hardwareConcurrency || 8) < 4
@@ -117,13 +120,15 @@ function Aquarium() {
     let elapsed = 0
     let previousTime = 0
     let animationFrame = null
+    let isOnscreen = false
     let pointer = { x: width / 2, y: height / 2, active: false }
     let fish = []
     let bubbles = []
     let splashes = []
 
     function targetFishCount() {
-      if (touchPreference.matches || width < 720) return { school: 0, ambient: 5, jumper: 0 }
+      if (motionPreference.matches || width < 768) return { school: 0, ambient: 0, jumper: 0 }
+      if (touchPreference.matches) return { school: 0, ambient: AMBIENT_SIZE, jumper: 0 }
       if (lowPerformance) return { school: 4, ambient: 4, jumper: 0 }
       return { school: SCHOOL_SIZE, ambient: AMBIENT_SIZE, jumper: 1 }
     }
@@ -133,6 +138,7 @@ function Aquarium() {
       const oldHeight = height
       width = window.innerWidth
       height = window.innerHeight
+      canvas.hidden = width < 768 || motionPreference.matches
       pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
       canvas.width = Math.round(width * pixelRatio)
       canvas.height = Math.round(height * pixelRatio)
@@ -175,7 +181,12 @@ function Aquarium() {
         phase: randomBetween(0, Math.PI * 2),
         drift: randomBetween(2, 8),
       }))
-      draw()
+      if (isOnscreen && width >= 768 && !motionPreference.matches && !document.hidden) {
+        draw()
+        startAnimation()
+      } else {
+        context.clearRect(0, 0, width, height)
+      }
     }
 
     function chooseDestination(swimmer) {
@@ -192,14 +203,16 @@ function Aquarium() {
         const bubbleY = y < 0 ? y + height + 12 : y
         context.beginPath()
         context.arc(bubble.x + Math.sin(elapsed * 0.4 + bubble.phase) * 4, bubbleY, bubble.radius, 0, Math.PI * 2)
-        context.fillStyle = 'rgba(126, 238, 241, 0.16)'
+        context.globalAlpha = 0.14
+        context.fillStyle = palette.secondary
         context.fill()
+        context.globalAlpha = 1
       }
 
       for (const swimmer of fish) {
         const jumping = swimmer.kind === 'jumper' && swimmer.jumpStart !== null
           && elapsed - swimmer.jumpStart < swimmer.jumpDuration
-        drawFish(context, swimmer, elapsed, jumping)
+        drawFish(context, swimmer, elapsed, jumping, palette)
       }
 
       splashes = splashes.filter((splash) => elapsed - splash.start < 1)
@@ -207,7 +220,7 @@ function Aquarium() {
         const progress = elapsed - splash.start
         context.save()
         context.globalAlpha = (1 - progress) * 0.35
-        context.strokeStyle = '#75f8ef'
+        context.strokeStyle = palette.secondary
         context.lineWidth = 1
         context.beginPath()
         context.ellipse(splash.x, splash.y, 3 + progress * 18, 1 + progress * 5, 0, 0, Math.PI * 2)
@@ -216,7 +229,7 @@ function Aquarium() {
           const bubbleProgress = Math.max(0, progress - index * 0.08)
           context.beginPath()
           context.arc(splash.x + (index - 1) * 5, splash.y - bubbleProgress * 24, 1.2, 0, Math.PI * 2)
-          context.fillStyle = '#8ff9ed'
+          context.fillStyle = palette.secondary
           context.fill()
         }
         context.restore()
@@ -308,23 +321,31 @@ function Aquarium() {
 
     function frame(time) {
       animationFrame = null
-      if (document.hidden) return
-      if (!motionPreference.matches) {
-        const delta = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0
-        previousTime = time
-        update(delta)
-        draw()
-        animationFrame = window.requestAnimationFrame(frame)
-      } else {
-        previousTime = 0
-        draw()
-      }
+      if (document.hidden || !isOnscreen || width < 768 || motionPreference.matches) return
+      const delta = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0
+      previousTime = time
+      update(delta)
+      draw()
+      animationFrame = window.requestAnimationFrame(frame)
     }
 
     function startAnimation() {
-      if (!document.hidden && animationFrame === null) {
+      if (
+        !document.hidden
+        && isOnscreen
+        && width >= 768
+        && !motionPreference.matches
+        && animationFrame === null
+      ) {
         animationFrame = window.requestAnimationFrame(frame)
       }
+    }
+
+    function stopAnimation() {
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame)
+      animationFrame = null
+      previousTime = 0
+      context.clearRect(0, 0, width, height)
     }
 
     function onPointerMove(event) {
@@ -334,20 +355,16 @@ function Aquarium() {
 
     function onVisibilityChange() {
       if (document.hidden) {
-        if (animationFrame !== null) window.cancelAnimationFrame(animationFrame)
-        animationFrame = null
+        stopAnimation()
       } else {
-        previousTime = 0
         startAnimation()
       }
     }
 
     function onMotionChange() {
-      previousTime = 0
-      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame)
-      animationFrame = null
-      draw()
-      if (!motionPreference.matches) startAnimation()
+      resizeCanvas()
+      if (motionPreference.matches || width < 768) stopAnimation()
+      else startAnimation()
     }
 
     function onInputModeChange() {
@@ -355,8 +372,21 @@ function Aquarium() {
       resizeCanvas()
     }
 
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isOnscreen = entry.isIntersecting
+      if (isOnscreen) startAnimation()
+      else stopAnimation()
+    })
+    if (hero) visibilityObserver.observe(hero)
+
+    const themeObserver = new MutationObserver(() => {
+      palette = readPalette()
+      if (isOnscreen && width >= 768 && !motionPreference.matches && !document.hidden) draw()
+      else context.clearRect(0, 0, width, height)
+    })
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+
     resizeCanvas()
-    startAnimation()
     window.addEventListener('resize', resizeCanvas, { passive: true })
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     document.addEventListener('visibilitychange', onVisibilityChange)
@@ -370,6 +400,8 @@ function Aquarium() {
       document.removeEventListener('visibilitychange', onVisibilityChange)
       motionPreference.removeEventListener('change', onMotionChange)
       touchPreference.removeEventListener('change', onInputModeChange)
+      visibilityObserver.disconnect()
+      themeObserver.disconnect()
     }
   }, [])
 

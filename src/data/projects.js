@@ -1,11 +1,18 @@
 export const projects = [
   {
     name: 'Smart Campus — Campus Maintenance Management System',
-    description:
-      'Smart Campus is a full-stack web application that streamlines campus maintenance by allowing students to report issues and track their status while providing administrators with tools to search, assign, and manage reports.',
+    description: 'A campus maintenance app for reporting issues and tracking their status.',
+    features: [
+      'Students can report campus maintenance issues.',
+      'Students can track report status.',
+      'Administrators can search reports.',
+      'Administrators can assign reports.',
+      'Administrators can manage reports.',
+    ],
     technologies: ['React', 'Vite', 'Supabase', 'PostgreSQL', 'Vercel'],
     githubUrl: 'https://github.com/solapuresanskar01-spec/smart-campus',
     liveUrl: 'https://smart-campus-alpha-five.vercel.app/',
-    status: 'Full-stack project',
+    screenshot: '/smart-campus.png',
+    screenshotAlt: 'Smart Campus administrator dashboard',
   },
 ]

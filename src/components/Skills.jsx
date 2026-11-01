@@ -1,36 +1,27 @@
-import { ArrowUpRight } from 'lucide-react'
 import { skillGroups } from '../data/skills.js'
 
 function Skills() {
   return (
     <section className="section section-muted section-anchor" id="skills">
       <div className="container">
-        <div className="section-heading section-heading-row">
-          <div>
-            <p className="eyebrow">02 — THE TOOLKIT</p>
-            <h2>Skills I’m <span>growing.</span></h2>
-          </div>
-          <p className="section-aside">A work in progress, by design.<br />Learning through practice and projects.</p>
+        <div className="section-heading">
+          <h2>Skills</h2>
         </div>
-        <div className="skill-grid">
-          {skillGroups.map((group, index) => (
-            <article className="skill-card" key={group.name}>
-              <div className="skill-card-top">
-                <span className="skill-index">0{index + 1}</span>
-                <ArrowUpRight size={17} />
-              </div>
-              <h3>{group.name}</h3>
-              <div className="skill-list">
+        <dl className="skill-groups">
+          {skillGroups.map((group) => (
+            <div className="skill-group" key={group.name}>
+              <dt>{group.name}</dt>
+              <dd>
                 {group.skills.map((skill) => (
-                  <span className="skill-pill" key={skill.name}>
-                    {skill.name}
-                    {skill.status && <small>{skill.status}</small>}
+                  <span className="skill-item" key={skill.name}>
+                    <span>{skill.name}</span>
+                    {skill.context && <small>{skill.context}</small>}
                   </span>
                 ))}
-              </div>
-            </article>
+              </dd>
+            </div>
           ))}
-        </div>
+        </dl>
       </div>
     </section>
   )

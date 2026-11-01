@@ -1,23 +1,34 @@
-import { ArrowUpRight, Mail } from 'lucide-react'
+import { useState } from 'react'
 import { links } from '../data/links.js'
 
+const email = links.email.slice('mailto:'.length)
+
 function Contact() {
+  const [copyStatus, setCopyStatus] = useState('')
+
+  async function copyEmail() {
+    try {
+      await navigator.clipboard.writeText(email)
+      setCopyStatus('Copied')
+    } catch {
+      setCopyStatus('Copy failed. Select and copy the email address.')
+    }
+  }
+
   return (
     <section className="section contact-section section-anchor" id="contact">
       <div className="container contact-grid">
-        <div>
-          <p className="eyebrow">06 — GET IN TOUCH</p>
-          <h2>Have an opportunity?<br /><span>Let’s talk.</span></h2>
-          <p className="contact-intro">
-            Open to learning-focused software engineering internship opportunities
-            and conversations about building useful software.
-          </p>
+        <h2>Contact</h2>
+        <div className="contact-details">
+          <p className="contact-email-text">{email}</p>
+          <div className="contact-actions">
+            <button className="button button-outline" type="button" onClick={copyEmail}>
+              Copy
+            </button>
+            <a className="button button-primary" href={links.email}>Email</a>
+          </div>
+          <p className="copy-status" aria-live="polite">{copyStatus}</p>
         </div>
-        <a className="contact-email" href={links.email}>
-          <span className="contact-mail-icon"><Mail size={20} /></span>
-          <span><small>Drop me a line</small><strong>solapuresanskar01@gmail.com</strong></span>
-          <ArrowUpRight size={20} />
-        </a>
       </div>
     </section>
   )

@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { ArrowUpRight, Code2, ExternalLink } from 'lucide-react'
 import { projects } from '../data/projects.js'
 
 function isValidExternalUrl(value) {
@@ -11,73 +9,39 @@ function isValidExternalUrl(value) {
   }
 }
 
-function ProjectCard({ project, index }) {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 })
-
-  function handlePointerMove(event) {
-    if (
-      event.pointerType !== 'mouse'
-      || window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      return
-    }
-
-    const bounds = event.currentTarget.getBoundingClientRect()
-    const x = (event.clientX - bounds.left) / bounds.width
-    const y = (event.clientY - bounds.top) / bounds.height
-    setTilt({
-      x: Number(((0.5 - y) * 4).toFixed(2)),
-      y: Number(((x - 0.5) * 4).toFixed(2)),
-    })
-  }
-
-  function resetTilt() {
-    setTilt({ x: 0, y: 0 })
-  }
-
+function ProjectCard({ project }) {
   return (
-    <article
-      className="project-card"
-      onPointerMove={handlePointerMove}
-      onPointerLeave={resetTilt}
-      style={{ '--tilt-x': `${tilt.x}deg`, '--tilt-y': `${tilt.y}deg` }}
-    >
-      <div className={`project-art project-art-${index + 1}`} aria-hidden="true">
-        <span className="project-art-index">0{index + 1}</span>
-        <div className="project-art-mark">{project.name.slice(0, 1)}</div>
-        <span className="project-art-line" />
-        <ArrowUpRight className="project-art-arrow" size={18} />
-      </div>
-      <div className="project-card-content">
-        <div className="project-title-line">
-          <h3>{project.name}</h3>
-          <span className="project-status"><i />{project.status}</span>
+    <article className="project-card">
+      {project.screenshot ? (
+        <img
+          className="project-screenshot"
+          src={project.screenshot}
+          width="1920"
+          height="1080"
+          loading="lazy"
+          alt={project.screenshotAlt}
+        />
+      ) : (
+        <div className="project-screenshot-placeholder">
+          <p>TODO(sanskar): Add a screenshot for {project.name}.</p>
         </div>
+      )}
+      <div className="project-card-content">
+        <h3>{project.name}</h3>
         <p>{project.description}</p>
-        <ul className="project-tags" aria-label="Technology stack">
-          {project.technologies.map((technology) => <li key={technology}>{technology}</li>)}
+        <ul className="project-features">
+          {project.features.map((feature) => <li key={feature}>{feature}</li>)}
         </ul>
-        <div className="project-actions project-cta">
+        <p className="project-stack"><strong>Stack:</strong> {project.technologies.join(', ')}</p>
+        <div className="project-cta">
           {isValidExternalUrl(project.liveUrl) && (
-            <a
-              className="button button-primary"
-              href={project.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open ${project.name} live demo in a new tab`}
-            >
-              Live Demo <ExternalLink size={16} />
+            <a className="button button-primary" href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+              Live
             </a>
           )}
           {isValidExternalUrl(project.githubUrl) && (
-            <a
-              className="button button-outline"
-              href={project.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open ${project.name} GitHub repository in a new tab`}
-            >
-              <Code2 size={16} /> GitHub Repository
+            <a className="button button-outline" href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+              Code
             </a>
           )}
         </div>
@@ -90,17 +54,11 @@ function Projects() {
   return (
     <section className="section section-anchor" id="projects">
       <div className="container">
-        <div className="section-heading section-heading-row">
-          <div>
-            <p className="eyebrow">03 — SELECTED WORK</p>
-            <h2>Made while <span>learning.</span></h2>
-          </div>
-          <p className="section-aside">A campus maintenance application built with<br />React, Vite, Supabase, and PostgreSQL.</p>
+        <div className="section-heading">
+          <h2>Projects</h2>
         </div>
-        <div className={`project-grid${projects.length === 1 ? ' project-grid-single' : ''}`}>
-          {projects.map((project, index) => (
-            <ProjectCard project={project} index={index} key={project.name} />
-          ))}
+        <div className="project-grid">
+          {projects.map((project) => <ProjectCard project={project} key={project.name} />)}
         </div>
       </div>
     </section>
