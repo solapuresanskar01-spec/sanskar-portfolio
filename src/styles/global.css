@@ -1,18 +1,15 @@
 :root {
+  --project-orange: #ff5e00;
+  --neutral-white: #ffffff;
   --neutral-ink: #111111;
-  --neutral-paper: #f0eee9;
-  --neutral-gray: #d0d0cb;
-  --neutral-stone: #a5aaa9;
-  --neutral-slate: #5d6870;
-  --neutral-quiet: #30373b;
-
-  --warm-coral: #d85b45;
-
-  --cool-teal: #3d6d68;
-  --cool-indigo: #4d6685;
-  --cool-slate: #4a6d7b;
+  --skill-cyan: #00e5ff;
+  --linkedin-blue: #0a66c2;
+  --github-green: #238636;
+  --leetcode-gray: #6b7280;
 
   --page-background: var(--neutral-ink);
+  --tile-light-text: var(--neutral-ink);
+  --tile-dark-text: var(--neutral-white);
 
   color-scheme: dark;
   background: var(--page-background);

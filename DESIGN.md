@@ -1,58 +1,78 @@
 # Sanskar Solapure Portfolio Design
 
-## Purpose
+## Purpose and visual structure
 
-Keep the existing colored-tile mosaic concept. Use a calm dark canvas, a strict grid, restrained interaction, and verified personal details only. The first reading order begins with the name tile, followed by the personal and education details, project work, skills, and profile links.
+Keep the existing React + Vite portfolio concept, overall layout, palette, typography, and grid proportions. The desktop composition has the name tile at top-left, the four orange project tiles below it in a two-column by two-row grid, a vertical profile column on the right, and a horizontal skills strip spanning the bottom. Tablet and mobile layouts reflow these same sections without changing their order or category colors.
 
-## Grid and placement
+## Shared palette
 
-- Use one mosaic container with 12 equal desktop columns, equal auto rows controlled by `--cell`, one `--gap`, and equal outer padding.
-- At widths up to 768px, use 4 equal columns and keep the name first and Smart Campus second.
-- Every tile is a direct grid child. Place tiles with column and row spans only; no per-tile margins, absolute positioning, or resting transforms.
-- Keep all tile boxes border-box. The hover swell uses transforms and does not change neighboring tile placement.
-- The optional `.debug-grid` class draws grid guides and is off by default. `?debug-grid=1` enables it for review.
-- Keep at least 44px tile height and allow vertical scrolling on small screens without horizontal overflow.
+Define the palette once in `src/styles/global.css` and use its custom properties throughout the tile styles.
 
-## Content and color meaning
+| Use | Token | Color |
+| --- | --- | --- |
+| Project tiles only | `--project-orange` | `#FF5E00` |
+| Neutral tiles | `--neutral-white` | `#FFFFFF` |
+| Page background | `--neutral-ink` | `#111111` |
+| Skill tiles only | `--skill-cyan` | `#00E5FF` |
+| LinkedIn tile | `--linkedin-blue` | `#0A66C2` |
+| GitHub profile tile | `--github-green` | `#238636` |
+| LeetCode tile | `--leetcode-gray` | `#6B7280` |
 
-Use one shared palette in `src/styles/global.css`:
+Use dark text on white, orange, and cyan tiles. Use white text on the social brand-color tiles. Maintain readable contrast and keep tile colors in shared custom properties.
 
-- Warm coral/orange is reserved for project work: Smart Campus and Projects.
-- Muted teal, indigo, and slate are reserved for skills and tools.
-- Off-white, warm gray, stone, and slate neutrals are used for identity, education, location, contact, resume, and social profiles.
-- Dark neutral is reserved for quiet decoration and the page background.
-- Social profile tiles are neutral, never green.
+## Layout and tile inventory
 
-The palette tokens are `--warm-*`, `--cool-*`, and `--neutral-*`. Components reference these tokens rather than defining colors. Keep text and tile colors at WCAG AA contrast for normal text. Do not hue-rotate colors across category boundaries.
+- Keep the broad left content area and narrow right profile column in normal document flow; the profile column is not fixed or sticky.
+- Keep the name tile top-left and the two-column by two-row project grid directly below it.
+- Keep exactly four large project tiles in the same grid positions: Smart Campus, CampusCode - ReBuild '26 Round 2, CampusCode Dashboard Recreation: ReBuild '26 (Round 1), and YouTube Landing Page.
+- The six profile tiles remain About, Resume, LinkedIn Profile, LeetCode Profile, GitHub Profile, and Contact.
+- The bottom skills strip contains one unwrapped, horizontally scrollable row of exactly eight tiles: C++, Python, CSS, JavaScript, HTML, DSA - Learning, Basic Git, and GitHub. Hide the scrollbar without disabling scroll input.
+- Mobile keeps Name first, Projects next in two columns where possible, profile tiles below Projects, and the skill strip last. The strip may scroll horizontally; the page itself must not.
 
-## Tile inventory
+## Verified project details
 
-There are 24 tiles total: the name; About, Education, Location, Contact, Resume, GitHub Profile, LinkedIn, and LeetCode; Smart Campus and Projects; 12 individual skills/tools; and one quiet decorative tile. The decorative tile is `aria-hidden`, unfocusable, and has no tooltip.
+### Smart Campus
 
-The name tile is the first focal tile and contains a real `h1` reading “Sanskar Solapure” and the role line “CSE student - Pune, India”. Smart Campus is the dominant warm tile, spans 6 by 4 cells on desktop and 4 by 3 on mobile, and uses its own flex alignment and padding for the “FEATURED PROJECT” label. Other project tiles remain warm. Skills are compact cool tiles. Neutral identity/contact/profile tiles are visually quieter.
+Smart Campus is a full-stack campus issue reporting and management application. Students can register and sign in, submit issues with optional photographs, and track report statuses. Administrators can review issue totals, search and filter reports, assign responsible staff categories, and update statuses. The source uses React 19, JavaScript, Vite, CSS3, Supabase Auth, Supabase Database, and Supabase Storage. Its repository is [`solapuresanskar01-spec/smart-campus`](https://github.com/solapuresanskar01-spec/smart-campus). No live demo URL is listed in the repository README or deployment configuration. Use the existing `public/assets/smart-campus.png` in the flipped project detail.
 
-Use only verified content:
+### CampusCode - ReBuild '26 Round 2
 
-- Education: B.E. Computer Science Engineering, AISSMS IIT Pune, expected 2029.
-- Smart Campus: campus issue reporting and admin dashboard; React and Supabase.
-- Skills/tools: C++, Python, JavaScript, React, HTML, CSS, Supabase, Git, GitHub, VS Code, DSA (learning), SQL (learning).
-- GitHub: `https://github.com/solapuresanskar01-spec`.
+An editorial, frontend-only CampusCode landing page for the student hackathon. Verified features include navigation and hero content, an ecosystem diagram, build-loop guide, hackathon theme links, community sections, and frontend-only login/registration previews. Its source uses semantic HTML, CSS, and vanilla JavaScript. Repository: `https://github.com/solapuresanskar01-spec/campuscode-rebuild26-round2`.
+
+### CampusCode Dashboard Recreation: ReBuild '26 (Round 1)
+
+A frontend recreation of the CampusCode website and student portal. Verified features include the landing page, demo login with validation and CAPTCHA, demo registration, and student dashboard views for Events and My Events. Its source uses HTML5, CSS3, vanilla JavaScript, mock data, and no backend. Repository: `https://github.com/solapuresanskar01-spec/campuscode-rebuild`.
+
+### YouTube Landing Page
+
+The repository README only supplies the project name. Source inspection confirms a manually authored static HTML/CSS recreation of a YouTube home page, with a header/search area, icon sidebar, and responsive video-card grid using thumbnail and channel images. It includes no JavaScript file or package manifest. Repository: `https://github.com/solapuresanskar01-spec/youtube_landing_page`.
+
+Do not invent achievements, metrics, features, screenshots, or results. Use the Smart Campus image only where supplied. The thumbnails and author images in the YouTube repository are page content, not a screenshot of the project.
+
+## Profile, resume, and skills content
+
+- About: Sanskar Solapure is a B.E. Computer Science Engineering student at AISSMS IIT Pune, expected 2029.
+- Resume: preview and download `public/assets/sanskar-solapure-resume.webp`. Do not describe it as a PDF. The file must be present in `public/assets/` for the preview and download to work.
 - LinkedIn: `https://www.linkedin.com/in/sanskar-solapure-0150413a1/`.
 - LeetCode: `https://leetcode.com/u/sanskarsolapure/`.
+- GitHub: `https://github.com/solapuresanskar01-spec`.
 - Contact: `solapuresanskar01@gmail.com`.
-- Resume URL has not been supplied. Keep the tile disabled and mark the missing URL as `[NEEDED]` with a TODO in source. Do not guess a URL.
+- External profile and project links open in a new tab with `noopener noreferrer`.
 
-Do not invent work history, project outcomes, metrics, achievements, or skill ratings.
+Do not add a Location tile or invent accomplishments, metrics, work history, features, screenshots, or skill levels.
 
-## Interaction and accessibility
+## Tile flip interaction
 
-Preserve the existing cursor heat map, floating tooltip, tile expansion transition, and Escape-to-close behavior. Keep the heat effect category-colored, restrained, and driven by CSS custom properties. Keyboard focus reveals the same label as hover. Touch users can see visible tile labels and activate tiles by tapping.
-
-Every meaningful tile is an accessible button with visible text; the decorative tile is hidden from assistive technology. Include visible `:focus-visible` styles, keyboard activation, reduced-motion support, and no essential hover-only information. Reduced-motion disables breathing, swell, and large transitions.
+- The name tile, project tiles, profile tiles, and skill tiles all flip in place around the Y-axis. They retain their original dimensions and grid positions; no tile opens a fullscreen overlay or scales to a larger size.
+- Each face uses the same dimensions, CSS perspective, `transform-style: preserve-3d`, and hidden backfaces. The back face keeps content within the tile and scrolls internally when needed.
+- Each tile has independent flip state, so multiple tiles may remain flipped at the same time. Its visible close control flips only that tile back; Escape flips all currently open tiles back. Closing restores keyboard focus to each tile's front control.
+- Keep the existing category-colored hover heat map and floating tooltips on the front faces.
+- Respect `prefers-reduced-motion` by removing breathing, hover transitions, and 3D flip transitions while retaining all content and controls.
+- Every tile has visible text, keyboard activation, and visible keyboard focus. Do not make essential information available only through hover.
 
 ## Quality checks
 
-- Confirm the 24-tile inventory and category mapping.
-- Confirm the name is visible above the fold and Smart Campus is the second mobile tile.
-- Check edges against the optional debug grid at 1920, 1280, 768, and 390px widths.
-- Confirm no horizontal scrolling, no neon colors, correct contrast, functioning hover/tooltip/expansion/Escape behavior, and reduced-motion support.
+- Verify the 4 project, 6 profile, and 8 skill tile counts and each destination.
+- Check desktop, tablet, and mobile layout without changing existing proportions or palette.
+- Test the in-place flip and close control on all tile categories, Escape-to-close, mobile activation, and reduced motion.
+- Check internal scrolling for longer tile content, resume preview/download when the WEBP asset is present, browser console, and page overflow.

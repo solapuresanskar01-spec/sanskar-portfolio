@@ -1,109 +1,81 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import ExpandedView from './components/ExpandedView.jsx'
-import { tiles } from './data/tiles.js'
+import TileFlip from './components/TileFlip.jsx'
+import { nameTile, profileTiles, projects, skillTiles } from './data/tiles.js'
 import './styles/mosaic.css'
-import './styles/expanded-view.css'
-
-function lockPageScroll() {
-  const previousOverflow = document.body.style.overflow
-  document.body.style.overflow = 'hidden'
-
-  return () => {
-    document.body.style.overflow = previousOverflow
-  }
-}
 
 function App() {
   const mosaicRef = useRef(null)
   const tooltipRef = useRef(null)
   const animationFrameRef = useRef(0)
-  const closeTimerRef = useRef(0)
+  const closeTimersRef = useRef(new Map())
   const pointerPositionRef = useRef({ x: 0, y: 0 })
   const activeTileRef = useRef(null)
-  const expandedTileRef = useRef(null)
-  const expandedPhaseRef = useRef('closed')
-  const sourceTileRef = useRef(null)
+  const flippedTileIdsRef = useRef(new Set())
+  const closingTileIdsRef = useRef(new Set())
+  const sourceTileRefsRef = useRef(new Map())
   const [tooltipLabel, setTooltipLabel] = useState('')
-  const [expandedTile, setExpandedTile] = useState(null)
-  const [expandedPhase, setExpandedPhase] = useState('closed')
+  const [flippedTileIds, setFlippedTileIds] = useState(() => new Set())
+  const [closingTileIds, setClosingTileIds] = useState(() => new Set())
 
-  const closeExpanded = useCallback(() => {
-    if (!expandedTileRef.current || expandedPhaseRef.current === 'closing') return
+  const clearHeat = useCallback(() => {
+    mosaicRef.current?.querySelectorAll('.mosaic__interactive-tile').forEach((tile) => {
+      tile.classList.remove('is-heated')
+      tile.style.removeProperty('--cursor-x')
+      tile.style.removeProperty('--cursor-y')
+      tile.style.removeProperty('--heat-scale')
+      tile.style.removeProperty('--heat-brightness')
+      tile.style.removeProperty('--heat-glow')
+      tile.style.removeProperty('--light-alpha')
+    })
+  }, [])
 
-    expandedPhaseRef.current = 'closing'
-    setExpandedPhase('closing')
-    const finishClosing = () => {
-      expandedTileRef.current = null
-      expandedPhaseRef.current = 'closed'
-      setExpandedTile(null)
-      setExpandedPhase('closed')
-      closeTimerRef.current = 0
+  const closeTile = useCallback((tileId) => {
+    if (!flippedTileIdsRef.current.has(tileId) || closingTileIdsRef.current.has(tileId)) return
+
+    closingTileIdsRef.current = new Set(closingTileIdsRef.current).add(tileId)
+    setClosingTileIds(new Set(closingTileIdsRef.current))
+    const finishClose = () => {
+      const sourceTile = sourceTileRefsRef.current.get(tileId)
+      const nextFlipped = new Set(flippedTileIdsRef.current)
+      nextFlipped.delete(tileId)
+      flippedTileIdsRef.current = nextFlipped
+      setFlippedTileIds(nextFlipped)
+      const nextClosing = new Set(closingTileIdsRef.current)
+      nextClosing.delete(tileId)
+      closingTileIdsRef.current = nextClosing
+      setClosingTileIds(nextClosing)
+      sourceTileRefsRef.current.delete(tileId)
+      closeTimersRef.current.delete(tileId)
+      if (sourceTile) {
+        window.requestAnimationFrame(() => sourceTile.focus({ preventScroll: true }))
+      }
     }
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    if (reducedMotion) {
-      finishClosing()
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishClose()
       return
     }
 
-    closeTimerRef.current = window.setTimeout(finishClosing, 850)
-  }, [])
-
-  const markExpandedOpen = useCallback(() => {
-    if (expandedPhaseRef.current !== 'opening' || !expandedTileRef.current) return
-    expandedPhaseRef.current = 'open'
-    setExpandedPhase('open')
+    closeTimersRef.current.set(tileId, window.setTimeout(finishClose, 720))
   }, [])
 
   const openTile = (tile, event) => {
-    if (tile.disabled || expandedTileRef.current) return
+    if (tile.disabled || flippedTileIdsRef.current.has(tile.id) || closingTileIdsRef.current.has(tile.id)) return
 
-    const bounds = event.currentTarget.getBoundingClientRect()
-    const selection = {
-      ...tile,
-      origin: {
-        left: bounds.left,
-        top: bounds.top,
-        width: bounds.width,
-        height: bounds.height,
-      },
-    }
-
-    sourceTileRef.current = event.currentTarget
-    expandedTileRef.current = selection
-    expandedPhaseRef.current = 'opening'
-    setExpandedTile(selection)
-    setExpandedPhase('opening')
+    const nextFlipped = new Set(flippedTileIdsRef.current).add(tile.id)
+    flippedTileIdsRef.current = nextFlipped
+    setFlippedTileIds(nextFlipped)
+    sourceTileRefsRef.current.set(tile.id, event.currentTarget)
     activeTileRef.current = null
     setTooltipLabel('')
-    mosaicRef.current.querySelectorAll('.mosaic__interactive-tile').forEach((element) => {
-      element.classList.remove('is-heated')
-      element.style.removeProperty('--cursor-x')
-      element.style.removeProperty('--cursor-y')
-      element.style.removeProperty('--heat-scale')
-      element.style.removeProperty('--heat-brightness')
-      element.style.removeProperty('--heat-glow')
-      element.style.removeProperty('--light-alpha')
-    })
+    clearHeat()
   }
 
   useEffect(() => {
     const mosaic = mosaicRef.current
     const tooltip = tooltipRef.current
-    const heatTiles = Array.from(mosaic.querySelectorAll('.mosaic__interactive-tile:not(:disabled)'))
+    const heatTiles = Array.from(mosaic.querySelectorAll('.mosaic__interactive-tile'))
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-
-    const clearHeat = () => {
-      heatTiles.forEach((tile) => {
-        tile.classList.remove('is-heated')
-        tile.style.removeProperty('--cursor-x')
-        tile.style.removeProperty('--cursor-y')
-        tile.style.removeProperty('--heat-scale')
-        tile.style.removeProperty('--heat-brightness')
-        tile.style.removeProperty('--heat-glow')
-        tile.style.removeProperty('--light-alpha')
-      })
-    }
 
     const positionTooltip = () => {
       const { x, y } = pointerPositionRef.current
@@ -118,13 +90,12 @@ function App() {
 
       left = Math.max(margin, Math.min(left, window.innerWidth - width - margin))
       top = Math.max(margin, Math.min(top, window.innerHeight - height - margin))
-
       tooltip.style.setProperty('--tooltip-x', `${left}px`)
       tooltip.style.setProperty('--tooltip-y', `${top}px`)
     }
 
     const showTooltip = (tile, x, y) => {
-      if (!tile?.dataset.tooltip || expandedTileRef.current) return
+      if (!tile?.dataset.tooltip || tile.classList.contains('tile-flip--flipped')) return
       activeTileRef.current = tile
       pointerPositionRef.current = { x, y }
       setTooltipLabel(tile.dataset.tooltip)
@@ -138,11 +109,13 @@ function App() {
 
     const resetInteraction = () => {
       hideTooltip()
-      clearHeat()
+      heatTiles.forEach((tile) => {
+        tile.classList.remove('is-heated')
+        tile.style.removeProperty('--light-alpha')
+      })
     }
 
     const handlePointerMove = (event) => {
-      if (expandedTileRef.current) return
       if (event.pointerType !== 'mouse') {
         if (activeTileRef.current) resetInteraction()
         return
@@ -158,11 +131,16 @@ function App() {
         if (activeTileRef.current) positionTooltip()
 
         if (reducedMotion.matches) {
-          clearHeat()
+          resetInteraction()
           return
         }
 
         heatTiles.forEach((tile) => {
+          if (tile.classList.contains('tile-flip--flipped')) {
+            tile.classList.remove('is-heated')
+            tile.style.removeProperty('--light-alpha')
+            return
+          }
           const bounds = tile.getBoundingClientRect()
           const dx = Math.max(bounds.left - x, 0, x - bounds.right)
           const dy = Math.max(bounds.top - y, 0, y - bounds.bottom)
@@ -196,7 +174,6 @@ function App() {
         resetInteraction()
         return
       }
-
       const tile = tileFromTarget(event.target)
       if (tile) showTooltip(tile, event.clientX, event.clientY)
     }
@@ -240,99 +217,50 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!expandedTile) {
-      sourceTileRef.current?.focus({ preventScroll: true })
-      sourceTileRef.current = null
-      return undefined
-    }
-
-    const unlockPageScroll = lockPageScroll()
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault()
-        closeExpanded()
+        flippedTileIdsRef.current.forEach((tileId) => closeTile(tileId))
       }
     }
-
     document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      unlockPageScroll()
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [closeExpanded, expandedTile])
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [closeTile])
 
   useEffect(() => () => {
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current)
+    closeTimersRef.current.forEach((timerId) => window.clearTimeout(timerId))
     if (animationFrameRef.current) window.cancelAnimationFrame(animationFrameRef.current)
   }, [])
 
-  const debugGridEnabled = new URLSearchParams(window.location.search).get('debug-grid') === '1'
+  const renderTile = (tile, className = '') => (
+    <TileFlip
+      className={className}
+      isFlipped={flippedTileIds.has(tile.id)}
+      key={tile.id}
+      onClose={() => closeTile(tile.id)}
+      onFlip={(event) => openTile(tile, event)}
+      phase={closingTileIds.has(tile.id) ? 'closing' : flippedTileIds.has(tile.id) ? 'open' : 'closed'}
+      tile={tile}
+    />
+  )
 
   return (
     <main
-      className={`mosaic${debugGridEnabled ? ' debug-grid' : ''}${expandedTile ? ' mosaic--expanded' : ''}`}
+      className="portfolio-layout"
       ref={mosaicRef}
     >
-      {tiles.map((tile) => {
-        const style = {
-          '--desktop-columns': tile.desktop.columns,
-          '--desktop-rows': tile.desktop.rows,
-          '--mobile-columns': tile.mobile.columns,
-          '--mobile-rows': tile.mobile.rows,
-        }
-
-        if (tile.decorative) {
-          return (
-            <div
-              aria-hidden="true"
-              className={`mosaic__tile mosaic__tile--${tile.tone} mosaic__tile--decoration`}
-              key={tile.id}
-              style={style}
-            />
-          )
-        }
-
-        const isExpanded = expandedTile?.id === tile.id
-        const classes = [
-          'mosaic__tile',
-          'mosaic__interactive-tile',
-          `mosaic__tile--${tile.tone}`,
-          `mosaic__interactive-tile--${tile.id}`,
-        ].join(' ')
-        const label = tile.id === 'name'
-          ? `${tile.label}, ${tile.role}; open details`
-          : tile.disabled
-            ? `${tile.label}, URL needed`
-            : `${tile.label}: open details`
-
-        return (
-          <button
-            aria-expanded={isExpanded}
-            aria-haspopup="dialog"
-            aria-label={label}
-            className={classes}
-            data-tooltip={tile.tooltip}
-            disabled={tile.disabled}
-            key={tile.id}
-            onClick={(event) => openTile(tile, event)}
-            style={style}
-            type="button"
-          >
-            {tile.id === 'name' ? (
-              <>
-                <h1 className="mosaic__name">{tile.label}</h1>
-                <p className="mosaic__role">{tile.role}</p>
-              </>
-            ) : (
-              <span aria-level="2" className="mosaic__heading" role="heading">
-                {tile.label}
-              </span>
-            )}
-            {tile.badge && <span className="mosaic__featured-label">{tile.badge}</span>}
-            {tile.missing && <span className="mosaic__missing">{tile.missing}</span>}
-          </button>
-        )
-      })}
+      {renderTile(nameTile, 'portfolio-layout__name')}
+      <section aria-label="Projects" className="portfolio-projects">
+        {projects.map((tile) => renderTile(tile))}
+      </section>
+      <aside aria-label="Profile and contact" className="portfolio-profiles">
+        {profileTiles.map((tile) => renderTile(tile))}
+      </aside>
+      <section aria-label="Skills" className="portfolio-skills">
+        <div aria-label="Skill tiles; scroll horizontally" className="portfolio-skills__strip" role="group" tabIndex={0}>
+          {skillTiles.map((tile) => renderTile(tile))}
+        </div>
+      </section>
       <div
         aria-hidden="true"
         className={`mosaic__tooltip${tooltipLabel ? ' mosaic__tooltip--visible' : ''}`}
@@ -340,14 +268,6 @@ function App() {
       >
         {tooltipLabel}
       </div>
-      {expandedTile && (
-        <ExpandedView
-          onClose={closeExpanded}
-          onOpened={markExpandedOpen}
-          phase={expandedPhase}
-          tile={expandedTile}
-        />
-      )}
     </main>
   )
 }
