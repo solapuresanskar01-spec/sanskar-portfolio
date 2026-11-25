@@ -1,19 +1,20 @@
 :root {
-  --project-orange: #ff5e00;
-  --neutral-white: #ffffff;
-  --neutral-ink: #111111;
-  --skill-cyan: #00e5ff;
-  --linkedin-blue: #0a66c2;
-  --github-green: #238636;
-  --leetcode-gray: #6b7280;
-
-  --page-background: var(--neutral-ink);
-  --tile-light-text: var(--neutral-ink);
-  --tile-dark-text: var(--neutral-white);
+  --color-background: #17142A;
+  --color-card-primary: #51449A;
+  --color-card-secondary: #302A50;
+  --color-highlight: #00FFFF;
+  --color-text-primary: #F2F4F7;
+  --color-text-secondary: #C5C2D6;
+  --color-button-primary: #FF654A;
+  --color-accent-small: #E65378;
+  --color-status-success: #70D65E;
+  --color-linkedin: #0A66C2;
+  --color-linkedin-hover: #004182;
 
   color-scheme: dark;
-  background: var(--page-background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -39,5 +40,5 @@ body {
   min-height: 100vh;
   min-height: 100svh;
   overflow-x: hidden;
-  background: var(--page-background);
+  background: var(--color-background);
 }
