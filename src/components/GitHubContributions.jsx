@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+
+const EMPTY_DAYS = []
 
 const CONTRIBUTION_LEVELS = {
   NONE: 'none',
@@ -26,6 +28,8 @@ function ContributionLegend() {
 
 function GitHubContributions() {
   const [state, setState] = useState({ status: 'loading', data: null, errorCode: null })
+  const graphScrollRef = useRef(null)
+  const userHasTakenControlRef = useRef(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -56,8 +60,28 @@ function GitHubContributions() {
   }, [])
 
   const { status, data, errorCode } = state
-  const days = data?.days ?? []
+  const days = data?.days ?? EMPTY_DAYS
   const weekCount = days.reduce((maximum, day) => Math.max(maximum, day.week + 1), 0)
+
+  useLayoutEffect(() => {
+    if (status !== 'success' || days.length === 0 || userHasTakenControlRef.current) return
+
+    const graphScrollArea = graphScrollRef.current
+
+    if (graphScrollArea) {
+      graphScrollArea.scrollLeft = graphScrollArea.scrollWidth
+    }
+  }, [days, status])
+
+  const rememberUserControl = () => {
+    userHasTakenControlRef.current = true
+  }
+
+  const handleGraphKeyDown = (event) => {
+    if (['ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) {
+      rememberUserControl()
+    }
+  }
 
   return (
     <section aria-labelledby="github-contributions-title" className="github-contributions">
@@ -95,7 +119,17 @@ function GitHubContributions() {
 
       {status === 'success' && days.length > 0 && (
         <figure className="github-contributions__figure">
-          <div className="github-contributions__scroll">
+          <div
+            aria-label="Scrollable contribution graph. Scroll right to view the latest activity and left for older history."
+            className="github-contributions__scroll"
+            onKeyDown={handleGraphKeyDown}
+            onPointerDown={rememberUserControl}
+            onWheel={(event) => {
+              if (event.deltaX !== 0 || event.shiftKey) rememberUserControl()
+            }}
+            ref={graphScrollRef}
+            tabIndex={0}
+          >
             <div
               aria-label={`GitHub contribution calendar for ${data.username}: ${data.totalContributions} contributions across ${days.length} days in the last year.`}
               className="github-contributions__calendar"
