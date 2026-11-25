@@ -395,6 +395,7 @@ html {
 }
 
 .github-contributions {
+  --github-card-background: #000000;
   --github-cell-empty: #2D2B39;
   --github-cell-low: #0E4429;
   --github-cell-medium: #006D32;
@@ -409,7 +410,7 @@ html {
   padding: clamp(20px, 3vw, 32px);
   border: 1px solid rgb(0 255 255 / 18%);
   border-radius: 24px;
-  background: var(--color-card-secondary);
+  background: var(--github-card-background);
   box-shadow: 0 18px 48px rgb(0 0 0 / 14%);
 }
 
