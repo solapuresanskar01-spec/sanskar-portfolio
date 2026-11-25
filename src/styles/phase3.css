@@ -401,6 +401,10 @@ html {
   --github-cell-high: #26A641;
   --github-cell-highest: #39D353;
 
+  display: flex;
+  width: min(100%, 420px);
+  aspect-ratio: 1;
+  flex-direction: column;
   margin-top: 24px;
   padding: clamp(20px, 3vw, 32px);
   border: 1px solid rgb(0 255 255 / 18%);
@@ -445,17 +449,28 @@ html {
 }
 
 .github-contributions__message {
-  margin: 22px 0 0;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  margin: 18px 0 0;
   color: var(--color-text-secondary);
   font-size: 0.95rem;
   line-height: 1.5;
+  text-align: center;
 }
 
 .github-contributions__figure {
-  margin: 24px 0 0;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
 }
 
 .github-contributions__scroll {
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
@@ -768,6 +783,12 @@ html {
 
   .github-contributions__figure {
     margin-top: 18px;
+  }
+
+  .github-contributions {
+    width: 100%;
+    min-height: 380px;
+    aspect-ratio: auto;
   }
 
   .github-contributions__calendar {
